@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
-            "value": "eastus"
+            "value": "australiaeast"
         },
         "networkInterfaceName": {
             "value": "devsecops-cloud801"
@@ -76,7 +76,7 @@
             "value": "Static"
         },
         "publicIpAddressSku": {
-            "value": "Basic"
+            "value": "standard"
         },
         "virtualMachineName": {
             "value": "devsecops-cloud"
