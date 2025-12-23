@@ -192,16 +192,11 @@ rm -f /etc/apt/keyrings/jenkins-keyring.asc /etc/apt/keyrings/jenkins-keyring.gp
 
 mkdir -p /etc/apt/keyrings
 
-# Correct key for https://pkg.jenkins.io/debian (weekly line)
-wget -q -O /etc/apt/keyrings/jenkins-keyring.asc \
-  https://pkg.jenkins.io/debian/jenkins.io-2026.key
-
-# IMPORTANT: apt runs as _apt user, so keyring must be world-readable
-chmod 0644 /etc/apt/keyrings/jenkins-keyring.asc
-
-cat >/etc/apt/sources.list.d/jenkins.list <<'EOF'
-deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/
-EOF
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
 
 $APT_GET update
 $APT_GET install jenkins
