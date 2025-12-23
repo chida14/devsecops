@@ -188,11 +188,18 @@ mvn -v
 log "JENKINS"
 
 rm -f /etc/apt/sources.list.d/jenkins.list
+rm -f /etc/apt/keyrings/jenkins-keyring.asc /etc/apt/keyrings/jenkins-keyring.gpg
+
 mkdir -p /etc/apt/keyrings
-wget -q -O /etc/apt/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian/jenkins.io-2023.key
+
+# Download Jenkins repo key and convert to a binary keyring (more reliable with apt signed-by)
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key \
+  | gpg --dearmor --yes -o /etc/apt/keyrings/jenkins-keyring.gpg
+
+chmod 0644 /etc/apt/keyrings/jenkins-keyring.gpg
 
 cat >/etc/apt/sources.list.d/jenkins.list <<'EOF'
-deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/
+deb [signed-by=/etc/apt/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian binary/
 EOF
 
 $APT_GET update
@@ -201,14 +208,10 @@ $APT_GET install jenkins
 systemctl daemon-reload
 systemctl enable --now jenkins
 
+# Docker group and Jenkins access to Docker
+getent group docker >/dev/null || groupadd docker
 usermod -aG docker jenkins || true
 systemctl restart jenkins || true
 
 echo "jenkins ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/jenkins-nopasswd
 chmod 440 /etc/sudoers.d/jenkins-nopasswd
-
-log "COMPLETED"
-
-echo "If Jenkins is not running, check:"
-echo "  systemctl status jenkins --no-pager -l"
-echo "  journalctl -xeu jenkins --no-pager | tail -n 120"
