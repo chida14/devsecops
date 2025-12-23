@@ -192,14 +192,15 @@ rm -f /etc/apt/keyrings/jenkins-keyring.asc /etc/apt/keyrings/jenkins-keyring.gp
 
 mkdir -p /etc/apt/keyrings
 
-# Download Jenkins repo key and convert to a binary keyring (more reliable with apt signed-by)
-curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key \
-  | gpg --dearmor --yes -o /etc/apt/keyrings/jenkins-keyring.gpg
+# Correct key for https://pkg.jenkins.io/debian (weekly line)
+wget -q -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian/jenkins.io-2026.key
 
-chmod 0644 /etc/apt/keyrings/jenkins-keyring.gpg
+# IMPORTANT: apt runs as _apt user, so keyring must be world-readable
+chmod 0644 /etc/apt/keyrings/jenkins-keyring.asc
 
 cat >/etc/apt/sources.list.d/jenkins.list <<'EOF'
-deb [signed-by=/etc/apt/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian binary/
+deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/
 EOF
 
 $APT_GET update
