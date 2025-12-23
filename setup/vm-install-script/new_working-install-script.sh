@@ -185,18 +185,23 @@ fi
 java -version
 mvn -v
 
-log "JENKINS"
+log "JENKINS (LTS / debian-stable)"
 
 rm -f /etc/apt/sources.list.d/jenkins.list
-rm -f /etc/apt/keyrings/jenkins-keyring.asc /etc/apt/keyrings/jenkins-keyring.gpg
+rm -f /etc/apt/keyrings/jenkins-keyring.asc
 
 mkdir -p /etc/apt/keyrings
 
-sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+# Jenkins LTS key + repo (debian-stable)
+wget -q -O /etc/apt/keyrings/jenkins-keyring.asc \
   https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
-  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+# Ensure apt (_apt user) can read the key
+chmod 0644 /etc/apt/keyrings/jenkins-keyring.asc
+
+cat >/etc/apt/sources.list.d/jenkins.list <<'EOF'
+deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/
+EOF
 
 $APT_GET update
 $APT_GET install jenkins
@@ -211,3 +216,5 @@ systemctl restart jenkins || true
 
 echo "jenkins ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/jenkins-nopasswd
 chmod 440 /etc/sudoers.d/jenkins-nopasswd
+
+log "COMPLETED"
