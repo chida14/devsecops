@@ -34,7 +34,6 @@ pipeline {
 
         stage('Docker Build and Push') {
             steps {
-                with
                 // prints all the jenkins env variables
                 sh 'printenv' 
                 sh 'docker build -t cmandolk/numeric-app:""$GIT-COMMIT"" .'
